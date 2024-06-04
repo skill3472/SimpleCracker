@@ -13,6 +13,7 @@ parser.add_argument("--mode", "-m", type=str, help="Select the hashing algorithm
                     default="sha512", choices=["sha512", "sha256", "sha1", "md5"])
 parser.add_argument("--out", "-o", type=str, help="Output filename.")
 parser.add_argument("--verbose", "-v", action="store_true", help="Verbose mode.")
+parser.add_argument("--leading", "-l", type=int, help="Target number length (will add leading zeros).")
 
 args = parser.parse_args()
 startPos = int(args.range.split('-')[0])
@@ -37,15 +38,24 @@ def HashNumber(number, mode="sha512") -> str:
     if mode not in hashlib.algorithms_available:
         raise ValueError("Hashing algorithm not supported on this version of the Python interpreter.")
 
+    if args.leading is not None:
+        zerosToAdd = args.leading - len(str(number))
+        if zerosToAdd > 0:
+            numberStr = zerosToAdd*"0" + str(number)
+        else:
+            numberStr = str(number)
+    else:
+        numberStr = str(number)
+
     match mode:
         case "sha512":
-            return hashlib.sha512(str(number).encode()).hexdigest()
+            return hashlib.sha512(numberStr.encode()).hexdigest()
         case "sha256":
-            return hashlib.sha256(str(number).encode()).hexdigest()
+            return hashlib.sha256(numberStr.encode()).hexdigest()
         case "sha1":
-            return hashlib.sha1(str(number).encode()).hexdigest()
+            return hashlib.sha1(numberStr.encode()).hexdigest()
         case "md5":
-            return hashlib.md5(str(number).encode()).hexdigest()
+            return hashlib.md5(numberStr.encode()).hexdigest()
         case _:
             raise ValueError("Hashing mode does not exist, or is not supported.")
 
